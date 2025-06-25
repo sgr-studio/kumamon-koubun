@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>クマモン構文変換ツール（JS版）</title>
+    <title>クマモン変換ツール（JS版）</title>
     <meta charset="UTF-8">
     <style>
         body {
@@ -60,10 +60,10 @@
     </style>
 </head>
 <body>
-    <h1>ひらがなを半角カタカナに変換！</h1>
-    <p>「う」と「ぅ」だけは全角だよ。</p>
+    <h1>クマモン構文変換ツール</h1>
+    <p>クマモン？誰の事だろうね…？</p>
 
-    <textarea id="inputText" placeholder="ここにひらがなを入力してね"></textarea><br>
+    <textarea id="inputText" placeholder="ここにひらがなやカタカナを入力してね"></textarea><br>
     <button onclick="convertText()">変換！</button>
 
     <div class="result-box">
@@ -78,7 +78,8 @@
 
             // ひらがなと半角カタカナの対応マップ
             const hiraganaToHalfKatakana = {
-                'あ': 'ｱ', 'い': 'ｲ', 'え': 'ｴ', 'お': 'ｵ', // うとぅ以外
+                'あ': 'ｱ', 'い': 'ｲ', 'う': 'ｳ', 'え': 'ｴ', 'お': 'ｵ',
+                'ぁ': 'ｧ', 'ぃ': 'ｨ', 'ぇ': 'ｪ', 'ぉ': 'ｫ',
                 'か': 'ｶ', 'き': 'ｷ', 'く': 'ｸ', 'け': 'ｹ', 'こ': 'ｺ',
                 'さ': 'ｻ', 'し': 'ｼ', 'す': 'ｽ', 'せ': 'ｾ', 'そ': 'ｿ',
                 'た': 'ﾀ', 'ち': 'ﾁ', 'つ': 'ﾂ', 'て': 'ﾃ', 'と': 'ﾄ',
@@ -97,14 +98,17 @@
                 'っ': 'ｯ', 'ー': 'ｰ', '、': '､', '。': '｡', ' ': ' ' // その他記号や空白
             };
 
-            // 全角のままにしたい文字（「う」と「ぅ」）
-            const fullWidthChars = ['う', 'ぅ'];
+            // 全角のままにしたい文字（「ぅ」のみ）
+            const fullWidthChars = ['ぅ'];
 
             for (const char of inputText) {
-                if (fullWidthChars.includes(char)) {
-                    convertedText += char; // 「う」と「ぅ」はそのまま
+                // カタカナかどうかを判定
+                if (char.match(/^[ァ-ヶー・]$/)) { // 全角カタカナ、長音記号、中点
+                    convertedText += char; // カタカナはそのまま
+                } else if (fullWidthChars.includes(char)) {
+                    convertedText += char; // 「ぅ」はそのまま
                 } else if (hiraganaToHalfKatakana[char]) {
-                    // hiraganaToHalfKatakanaに含まれるひらがなは半角カタカナに変換
+                    // ひらがなは半角カタカナに変換
                     convertedText += hiraganaToHalfKatakana[char];
                 } else {
                     convertedText += char; // その他の文字（漢字や英数字など）はそのまま
