@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>クマモン構文変換ツール（JS版）</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        textarea {
+            width: 80%;
+            max-width: 500px;
+            height: 150px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-box p {
+            margin-bottom: 10px;
+        }
+        .result-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            word-wrap: break-word; /* 長い文字列も折り返す */
+        }
+    </style>
+</head>
+<body>
+    <h1>ひらがなを半角カタカナに変換！</h1>
+    <p>母音「あ、い、う、え、お」だけは全角だよ。</p>
+
+    <textarea id="inputText" placeholder="ここにひらがなを入力してね"></textarea><br>
+    <button onclick="convertText()">変換！</button>
+
+    <div class="result-box">
+        <p><strong>元の文:</strong> <span id="originalText"></span></p>
+        <p><strong>変換された文:</strong> <span id="convertedText" class="result-text"></span></p>
+    </div>
+
+    <script>
+        function convertText() {
+            const inputText = document.getElementById('inputText').value;
+            let convertedText = '';
+
+            // ひらがなと半角カタカナの対応マップ
+            const hiraganaToHalfKatakana = {
+                'あ': 'ア', 'い': 'イ', 'う': 'ウ', 'え': 'エ', 'お': 'オ', // これらは後で全角に戻すのでここでは一旦全角カタカナ
+                'か': 'ｶ', 'き': 'ｷ', 'く': 'ｸ', 'け': 'ｹ', 'こ': 'ｺ',
+                'さ': 'ｻ', 'し': 'ｼ', 'す': 'ｽ', 'せ': 'ｾ', 'そ': 'ｿ',
+                'た': 'ﾀ', 'ち': 'ﾁ', 'つ': 'ﾂ', 'て': 'ﾃ', 'と': 'ﾄ',
+                'な': 'ﾅ', 'に': 'ﾆ', 'ぬ': 'ﾇ', 'ね': 'ﾈ', 'の': 'ﾉ',
+                'は': 'ﾊ', 'ひ': 'ﾋ', 'ふ': 'ﾌ', 'へ': 'ﾍ', 'ほ': 'ﾎ',
+                'ま': 'ﾏ', 'み': 'ﾐ', 'む': 'ﾑ', 'め': 'ﾒ', 'も': 'ﾓ',
+                'や': 'ﾔ', 'ゆ': 'ﾕ', 'よ': 'ﾖ',
+                'ら': 'ﾗ', 'り': 'ﾘ', 'ﾙ': 'ﾙ', 'れ': 'ﾚ', 'ろ': 'ﾛ',
+                'わ': 'ﾜ', 'を': 'ｦ', 'ん': 'ﾝ',
+                'が': 'ｶﾞ', 'ぎ': 'ｷﾞ', 'ぐ': 'ｸﾞ', 'げ': 'ｹﾞ', 'ご': 'ｺﾞ',
+                'ざ': 'ｻﾞ', 'じ': 'ｼﾞ', 'ず': 'ｽﾞ', 'ぜ': 'ｾﾞ', 'ぞ': 'ｿﾞ',
+                'だ': 'ﾀﾞ', 'ぢ': 'ﾁﾞ', 'づ': 'ﾂﾞ', 'で': 'ﾃﾞ', 'ど': 'ﾄﾞ',
+                'ば': 'ﾊﾞ', 'び': 'ﾋﾞ', 'ぶ': 'ﾌﾞ', 'べ': 'ﾍﾞ', 'ぼ': 'ﾎﾞ',
+                'ぱ': 'ﾊﾟ', 'ぴ': 'ﾋﾟ', 'ぷ': 'ﾌﾟ', 'ぺ': 'ﾍﾟ', 'ぽ': 'ﾎﾟ',
+                'ゃ': 'ｬ', 'ゅ': 'ｭ', 'ょ': 'ｮ',
+                'っ': 'ｯ', 'ー': 'ｰ', '、': '､', '。': '｡', ' ': ' ' // その他記号や空白
+            };
+
+            // 全角のままにしたい母音
+            const fullWidthVowels = ['あ', 'い', 'う', 'え', 'お'];
+
+            for (const char of inputText) {
+                if (fullWidthVowels.includes(char)) {
+                    convertedText += char; // 母音はそのまま
+                } else if (hiraganaToHalfKatakana[char]) {
+                    // hiraganaToHalfKatakanaに含まれるひらがなは半角カタカナに変換
+                    convertedText += hiraganaToHalfKatakana[char];
+                } else {
+                    convertedText += char; // その他の文字（漢字や英数字など）はそのまま
+                }
+            }
+
+            document.getElementById('originalText').textContent = inputText;
+            document.getElementById('convertedText').textContent = convertedText;
+        }
+    </script>
+</body>
+</html>
